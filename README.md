@@ -8,7 +8,7 @@ The domain is **Motorbike Rental**, which includes:
 
 
 
-## **Database Design**
+## ** Step 1. Database Design**
 
 ### **Entities and Relationships**
 
@@ -166,6 +166,140 @@ The domain is **Motorbike Rental**, which includes:
      - Cost = $50.
 
 ---
+### **Step 2: Business Logic**
 
-### E-R Diagram:
-Would you like me to generate a detailed E-R Diagram for this database design?
+1. **Single RentalTransaction for Multiple Bikes**:
+   - Each `RentalTransaction` is created for one renter but can include multiple bikes via the `RentalDetails` table.
+   - The system calculates the `TotalCost` by summing up the `Cost` from the `RentalDetails` table.
+
+2. **Bike Availability**:
+   - A bike can only be rented if its `ConditionStatus` is "Available."
+   - Upon renting, the status is updated to "Rented."
+
+3. **Payment Processing**:
+   - Payments are linked to the `RentalTransaction` through the `Payment` table.
+   - Payments can be "Pending" or "Paid," and the system blocks new rentals for renters with pending payments.
+
+4. **Maintenance Workflow**:
+   - When a bike requires maintenance, the `ConditionStatus` is updated to "UnderMaintenance."
+   - A maintenance record is created for each repair, and the bike becomes "Available" once resolved.
+
+5. **Role-Based Access**:
+   - **Renter**: Can view bikes, create rentals, and manage their account.
+   - **Lender**: Can manage their bikes and view rental details.
+   - **Admin**: Full control over the system, including users and transactions.
+   - **Maintenance Staff**: Limited to viewing and updating maintenance records.
+   - **Accountant**: Focuses on payment records and financial reports.
+
+6. **Constraints**:
+   - A bike cannot belong to multiple active rentals.
+   - Overlapping rental periods for the same bike are disallowed.
+
+---
+
+### **Step 3: Schema Definitions**
+
+#### **SQL Schema:**
+
+```sql
+-- Renter Table
+CREATE TABLE Renter (
+    RenterID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Phone VARCHAR(15),
+    Address TEXT,
+    AccountBalance DECIMAL(10, 2)
+);
+
+-- Lender Table
+CREATE TABLE Lender (
+    LenderID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Phone VARCHAR(15),
+    Address TEXT
+);
+
+-- Admin Table
+CREATE TABLE Admin (
+    AdminID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Phone VARCHAR(15)
+);
+
+-- Bike Table
+CREATE TABLE Bike (
+    BikeID INT PRIMARY KEY AUTO_INCREMENT,
+    Model VARCHAR(100) NOT NULL,
+    Brand VARCHAR(100),
+    Year INT,
+    ConditionStatus ENUM('Available', 'Rented', 'UnderMaintenance') DEFAULT 'Available',
+    DailyRate DECIMAL(10, 2) NOT NULL,
+    LenderID INT,
+    FOREIGN KEY (LenderID) REFERENCES Lender(LenderID)
+);
+
+-- RentalTransaction Table
+CREATE TABLE RentalTransaction (
+    RentalID INT PRIMARY KEY AUTO_INCREMENT,
+    RenterID INT,
+    TotalCost DECIMAL(10, 2),
+    RentalStartDate DATE,
+    RentalEndDate DATE,
+    PaymentStatus ENUM('Paid', 'Pending') DEFAULT 'Pending',
+    FOREIGN KEY (RenterID) REFERENCES Renter(RenterID)
+);
+
+-- RentalDetails Table
+CREATE TABLE RentalDetails (
+    RentalDetailID INT PRIMARY KEY AUTO_INCREMENT,
+    RentalID INT,
+    BikeID INT,
+    RentalStartDate DATE,
+    RentalEndDate DATE,
+    Cost DECIMAL(10, 2),
+    FOREIGN KEY (RentalID) REFERENCES RentalTransaction(RentalID),
+    FOREIGN KEY (BikeID) REFERENCES Bike(BikeID)
+);
+
+-- MaintenanceStaff Table
+CREATE TABLE MaintenanceStaff (
+    StaffID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100),
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Phone VARCHAR(15)
+);
+
+-- MaintenanceRecord Table
+CREATE TABLE MaintenanceRecord (
+    MaintenanceID INT PRIMARY KEY AUTO_INCREMENT,
+    BikeID INT,
+    StaffID INT,
+    MaintenanceDate DATE,
+    IssueDescription TEXT,
+    ResolutionDetails TEXT,
+    Cost DECIMAL(10, 2),
+    FOREIGN KEY (BikeID) REFERENCES Bike(BikeID),
+    FOREIGN KEY (StaffID) REFERENCES MaintenanceStaff(StaffID)
+);
+
+-- Payment Table
+CREATE TABLE Payment (
+    PaymentID INT PRIMARY KEY AUTO_INCREMENT,
+    RentalID INT,
+    Amount DECIMAL(10, 2),
+    PaymentDate DATE,
+    Status ENUM('Paid', 'Pending') DEFAULT 'Pending',
+    FOREIGN KEY (RentalID) REFERENCES RentalTransaction(RentalID)
+);
+
+-- Accountant Table
+CREATE TABLE Accountant (
+    AccountantID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100),
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Phone VARCHAR(15)
+);
+```
