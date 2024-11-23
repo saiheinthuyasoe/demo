@@ -303,3 +303,148 @@ CREATE TABLE Accountant (
     Phone VARCHAR(15)
 );
 ```
+
+# Admin
+
+Let's define the **Entity** and **Relationship** for the **Admin** role in the **Motorbike Rent Web Application**.
+
+### 1. **Entity for Admin**
+An **Entity** in a database represents a real-world object or concept, and in the case of the **Admin**, this entity stores information specific to administrators managing the system.
+
+#### **Admin Entity**:
+This will represent an **Admin** within the system, who manages users, rental transactions, bikes, and more.
+
+**Admin Entity Attributes**:
+- `AdminID` (Primary Key): A unique identifier for each admin.
+- `Name`: The name of the admin.
+- `Email`: The email address (unique).
+- `Phone`: The phone number for the admin.
+
+---
+
+### **Admin Entity Example**:
+
+| **Attribute**  | **Data Type**     | **Description**                                           |
+|----------------|-------------------|-----------------------------------------------------------|
+| `AdminID`      | INT               | Unique identifier for each admin (Primary Key).           |
+| `Name`         | VARCHAR           | Name of the admin.                                        |
+| `Email`        | VARCHAR (Unique)  | Unique email address of the admin.                        |
+| `Phone`        | VARCHAR           | Phone number of the admin.                                |
+
+### **Admin Entity Diagram**:
+```
++------------------------+
+|        Admin            |
++------------------------+
+| AdminID (PK)           |
+| Name                   |
+| Email                  |
+| Phone                  |
++------------------------+
+```
+
+---
+
+### 2. **Relationship of Admin with Other Entities**
+
+An **Admin** is involved in multiple actions across different entities, as they manage the entire system. Let’s define how the **Admin** relates to other entities.
+
+#### Key Relationships Involving the Admin:
+
+1. **Admin and User**:
+   - **Relationship Type**: **One-to-Many**
+   - An **Admin** manages many **Users** (renters and lenders), and can deactivate/suspend accounts or grant permissions.
+   - The **Admin** does not have a direct foreign key relation in the **User** table, but the admin manages users via system permissions.
+
+2. **Admin and Bike**:
+   - **Relationship Type**: **One-to-Many**
+   - An **Admin** can manage many **Bikes**. Admins can add, remove, or modify bikes in the system.
+
+3. **Admin and Rental Transaction**:
+   - **Relationship Type**: **One-to-Many**
+   - An **Admin** oversees many **Rental Transactions**. Admins can view, monitor, or cancel transactions if necessary.
+
+4. **Admin and Maintenance Record**:
+   - **Relationship Type**: **One-to-Many**
+   - An **Admin** manages many **Maintenance Records** to track bike issues and resolutions, and assign tasks to staff.
+
+5. **Admin and Payment**:
+   - **Relationship Type**: **One-to-Many**
+   - An **Admin** manages **Payments**, ensuring all transactions are processed and can handle payment disputes.
+
+---
+
+### **ER Diagram for Admin and Relations**
+
+The **Entity-Relationship Diagram (ERD)** for the **Admin** would look like this, showing relationships with other entities in the database.
+
+```
+  +------------------------+    1    +-------------------+
+  |       Admin            |<-------->|       User        |
+  +------------------------+          +-------------------+
+  | AdminID (PK)           |          | UserID (PK)       |
+  | Name                   |          | Name              |
+  | Email                  |          | Email             |
+  | Phone                  |          | Phone             |
+  +------------------------+          +-------------------+
+          | 1                                    |
+          |                                      |
+          |                                      |
+          |                                      |
+          |                                      |
+  +---------------------+   1    +--------------------+      +--------------------+
+  |      Bike           |<-------->| Rental Transaction |<---->|     Payment        |
+  +---------------------+          +--------------------+      +--------------------+
+  | BikeID (PK)         |          | RentalID (PK)      |      | PaymentID (PK)     |
+  | Model               |          | RenterID (FK)      |      | Amount             |
+  | Brand               |          | TotalCost          |      | Date               |
+  | Year                |          | StartDate          |      | Status             |
+  | ConditionStatus     |          | EndDate            |      +--------------------+
+  +---------------------+          +--------------------+
+          | 1                                    |
+          |                                      |
+          |                                      |
+  +---------------------+  1    +-----------------------+
+  | Maintenance Record  |<------>| Maintenance Staff      |
+  +---------------------+        +-----------------------+
+  | RecordID (PK)       |        | StaffID (PK)          |
+  | BikeID (FK)         |        | Name                  |
+  | IssueDescription    |        | Phone                 |
+  | ResolutionDetails   |        | Email                 |
+  | MaintenanceDate     |        +-----------------------+
+  +---------------------+
+```
+
+---
+
+### **Explanation of Relationships**:
+
+1. **Admin ↔ User**:
+   - **One-to-Many**: One **Admin** can manage many **Users** (renters, lenders).
+   - **Business Logic**: Admins can create, deactivate, or suspend users.
+
+2. **Admin ↔ Bike**:
+   - **One-to-Many**: One **Admin** can manage multiple **Bikes**.
+   - **Business Logic**: Admins add or remove bikes from the system.
+
+3. **Admin ↔ Rental Transaction**:
+   - **One-to-Many**: One **Admin** can oversee multiple **Rental Transactions**.
+   - **Business Logic**: Admins monitor transactions, approve, or cancel rentals.
+
+4. **Admin ↔ Maintenance Record**:
+   - **One-to-Many**: One **Admin** can oversee multiple **Maintenance Records**.
+   - **Business Logic**: Admin assigns or monitors bike maintenance tasks.
+
+5. **Admin ↔ Payment**:
+   - **One-to-Many**: One **Admin** manages multiple **Payments**.
+   - **Business Logic**: Admins monitor payment statuses, process refunds, or resolve disputes.
+
+---
+
+### Summary:
+
+- The **Admin** entity stores details about the admin, including their unique identifier, name, email, and phone number.
+- The **Admin** has multiple **One-to-Many** relationships with other entities, including **User**, **Bike**, **Rental Transaction**, **Maintenance Record**, and **Payment**.
+- Admins have broad control over the system, which is represented through these relationships in the database.
+
+Would you like further details on any of these relationships or help with implementation?
